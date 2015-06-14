@@ -30,6 +30,7 @@ static FILE  * _filehandle;
 typedef struct s_signals {
 	char *name;
 	int length;
+	int nickname;
 	long int time;
 	char *value;
 } s_signal;
@@ -68,6 +69,9 @@ int vcd_date(void)
 }
 int vcd_version(char *version)
 {
+	g_fprintf(_filehandle,"$version\n");
+	g_fprintf(_filehandle,"\t%s\n",version);
+	g_fprintf(_filehandle,"$end\n");
 }
 int vcd_comment(char *comment)
 {
@@ -77,14 +81,17 @@ int vcd_comment(char *comment)
 }
 int vcd_timescale(char *timescale)
 {
+	g_fprintf(_filehandle,"$timescale %s $end\n",timescale);
 }
 int vcd_scope(char *module)
 {
+	g_fprintf(_filehandle,"$scope module %s $end\n",module);
 }
 int vcd_upscope(void)
 {
+	g_fprintf(_filehandle,"$upscope $end\n");
 }
-int vcd_wire(int size, char *name)
+int vcd_wire(char *name, int size)
 {
 }
 
