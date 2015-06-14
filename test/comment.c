@@ -3,11 +3,11 @@
 #include <stdio.h>
 int success=0;
 int failure=0;
-GError **error;
-int main(int argc, char *argv)
+int main(int argc, char *argv[])
 {
 	int h;
-	if (vcd_open("toto") == 0) {
+	vcd_init();
+	if (vcd_open("comment.out") == 0) {
 		success++;
 		printf("open succeeded\n");
 	} else {
@@ -15,7 +15,7 @@ int main(int argc, char *argv)
 		failure++;
 	}
 	vcd_comment("hello");
-	if (vcd_close(error) == TRUE) {
+	if (vcd_close() == 0) {
 		success++;
 		printf("close succeeded\n");
 	} else {

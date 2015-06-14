@@ -1,6 +1,11 @@
 AC_INIT([vcd],[0.0],[pierregobin@free.fr])
-AC_PROC_C
-AC_RANLIB
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_PROG_CC
+AC_PROG_RANLIB
+AC_PROG_LIBTOOL
+AM_INIT_AUTOMAKE([1.9])
+PKG_CHECK_MODULES([GLIB], [glib-2.0])
+AC_SUBST([GLIB_LIBS])
+AC_SUBST([GLIB_CFLAGS])
+AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 AC_OUTPUT
 

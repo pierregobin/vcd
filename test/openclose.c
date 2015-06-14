@@ -3,41 +3,38 @@
 #include <stdio.h>
 int success=0;
 int failure=0;
-GError **error;
 int main(int argc, char *argv)
 {
-	int h;
-	if (vcd_open("toto",&h) == 0) {
+	vcd_init();
+	if (vcd_open("toto") == 0) {
 		success++;
-		if (h == 0)  {success++;} else {
-		   printf("bad handler (0 expected: %d)\n",h);
-                   failure++;};
+		printf("succeed to open <toto>\n");
 	} else {
 		printf("fail to open <toto>\n");
 		failure++;
 	}
-	if (vcd_open("titi",&h) == 0) {
+	if (vcd_close() == 0) {
+		printf("succeed to close <toto>\n");
 		success++;
-		if (h == 1)  {success++;} else {
-		   printf("bad handler (1 expected: %d)\n",h);
+	} else {
+		printf("fail to close <toto>\n");
 		failure++;
-        	}
+	}
+	if (vcd_open("titi") == 0) {
+		printf("succeed to open <titi>\n");
+		success++;
 	} else {
 		printf("fail to open <titi>\n");
 		failure++;
 	}
-	if (vcd_close(0, error) == 0) {
+	if (vcd_close() == 0) {
+		printf("succeed to close <titi>\n");
 		success++;
 	} else {
-		printf("fail to close 0\n");
 		failure++;
+		printf("fail to close <titi>\n");
 	}
-	if (vcd_close(1, error) == 0) {
-		success++;
-	} else {
-		printf("fail to close 1\n");
-		failure++;
-	}
+	printf("success = %d\nfailure = %d\n",success,failure);
 	if (failure ) { exit (1); } else { exit(0); };
 	
 	
