@@ -14,7 +14,7 @@ int vcd_upscope(void);
 int vcd_wire(char *name,int size);
 int vcd_close();
 int vcd_dump(char *name, char *value);
-int vcd_time(long int time);
+int vcd_time(long unsigned int time);
 
 #endif /* VCD_H_ */
 

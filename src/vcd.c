@@ -22,23 +22,29 @@
 #include <stdio.h>
 #include <vcd.h>
 #include <errno.h>
-static GSList  *_gsl_signals;
-
+#define MAX_SIGNAL 20
+static long unsigned int _vcd_time;
 static char * _filename;
 static FILE  * _filehandle;
+static gboolean _print_vcd_time;
 
 typedef struct s_signals {
-	char *name;
-	int length;
-	int nickname;
-	long int time;
-	char *value;
+	char *name; /* name of the signal */
+	int size; /* size (number of bits) of the signal */
+	int nickname; /* short name used in the dump file */
+	long int time; /* last updated time */
+	char value[128]; /* last value */
 } s_signal;
 
+static s_signal  _gsl_signals[MAX_SIGNAL];
+static int _signal_number;
+static int nickname;
 
 int vcd_init(void)
 {
-	_gsl_signals = NULL;
+	_signal_number = 0;
+	_vcd_time = 0;
+	nickname = 33;
 	return (0);
 }
 
@@ -93,17 +99,64 @@ int vcd_upscope(void)
 }
 int vcd_wire(char *name, int size)
 {
+	int i;
+	if (_signal_number >= MAX_SIGNAL) return 1;
+	_gsl_signals[_signal_number].name = name;
+	_gsl_signals[_signal_number].size = size;
+	_gsl_signals[_signal_number].nickname = nickname;
+	nickname ++;
+	for (i=0;i<size;i++) _gsl_signals[_signal_number].value[i] = "x";
+	_signal_number++;
+	g_fprintf(_filehandle,"$var wire %d %c %s $end\n",size,nickname,name);
+	return(0);
+	
 }
 
 int vcd_close(void)
 {
 	return (fclose(_filehandle));
 }
+
+int vcd_dump_vars(void)
+{
+	int i;
+	g_fprintf(_filehandle,"$dumpvars\n");
+	for (i=0; i<_signal_number;i++) {
+		printf("[%d] %s\n",i,_gsl_signals[i].name);
+		if (_gsl_signals[i].size == 1) {
+			g_fprintf(_filehandle,"%s%s\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+		} else {
+			g_fprintf(_filehandle,"b%s%s #\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+		}
+	}
+	g_fprintf(_filehandle,"$end\n");
+}
 int vcd_dump(char *name, char *value)
 {
+	int i;
+	for (i=0; i<_signal_number;i++) {
+		if (strcmp(name,_gsl_signals[i].name) == 0) break;
+	}
+	if (strcmp(value,_gsl_signals[i].value) != 0) {
+		if (_print_vcd_time) {
+			g_fprintf(_filehandle,"#%ld\n",_vcd_time);
+			_print_vcd_time = FALSE;
+		}
+		strncpy(_gsl_signals[i].value,value,_gsl_signals[i].size);
+		if (_gsl_signals[i].size == 1) {
+			g_fprintf(_filehandle,"%s%s\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+		} else {
+			g_fprintf(_filehandle,"b%s%s #\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+		}
+	}
+	return(0);
 }
-int vcd_time(long int time)
+int vcd_time(long unsigned int time)
 {
+	if (time < _vcd_time) return 1;
+	_vcd_time = time;
+	_print_vcd_time = TRUE;
+	return 0;
 }
 
 
