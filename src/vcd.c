@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <vcd.h>
 #include <errno.h>
+#include <string.h>
 #define MAX_SIGNAL 20
 static long unsigned int _vcd_time;
 static char * _filename;
@@ -104,10 +105,11 @@ int vcd_wire(char *name, int size)
 	_gsl_signals[_signal_number].name = name;
 	_gsl_signals[_signal_number].size = size;
 	_gsl_signals[_signal_number].nickname = nickname;
-	nickname ++;
-	for (i=0;i<size;i++) _gsl_signals[_signal_number].value[i] = "x";
-	_signal_number++;
+	for (i=0;i<size;i++) _gsl_signals[_signal_number].value[i] = 'x';
+	_gsl_signals[_signal_number].value[i]=0;
 	g_fprintf(_filehandle,"$var wire %d %c %s $end\n",size,nickname,name);
+	_signal_number++;
+	nickname ++;
 	return(0);
 	
 }
@@ -122,11 +124,15 @@ int vcd_dump_vars(void)
 	int i;
 	g_fprintf(_filehandle,"$dumpvars\n");
 	for (i=0; i<_signal_number;i++) {
-		printf("[%d] %s\n",i,_gsl_signals[i].name);
 		if (_gsl_signals[i].size == 1) {
-			g_fprintf(_filehandle,"%s%s\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+			g_fprintf(_filehandle,"%c%c\n",(int) _gsl_signals[i].value[0], _gsl_signals[i].nickname);
 		} else {
-			g_fprintf(_filehandle,"b%s%s #\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+			int j;
+			g_fprintf(_filehandle,"b");
+			for (j=0;j<_gsl_signals[i].size;j++) {
+				g_fprintf(_filehandle,"%c",_gsl_signals[i].value[j]);
+			}
+			g_fprintf(_filehandle," %c\n",_gsl_signals[i].nickname);
 		}
 	}
 	g_fprintf(_filehandle,"$end\n");
@@ -137,16 +143,21 @@ int vcd_dump(char *name, char *value)
 	for (i=0; i<_signal_number;i++) {
 		if (strcmp(name,_gsl_signals[i].name) == 0) break;
 	}
-	if (strcmp(value,_gsl_signals[i].value) != 0) {
+	if (strncmp(value,_gsl_signals[i].value,_gsl_signals[i].size) != 0) {
 		if (_print_vcd_time) {
 			g_fprintf(_filehandle,"#%ld\n",_vcd_time);
 			_print_vcd_time = FALSE;
 		}
 		strncpy(_gsl_signals[i].value,value,_gsl_signals[i].size);
 		if (_gsl_signals[i].size == 1) {
-			g_fprintf(_filehandle,"%s%s\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+			g_fprintf(_filehandle,"%c%c\n",(int) _gsl_signals[i].value[0], _gsl_signals[i].nickname);
 		} else {
-			g_fprintf(_filehandle,"b%s%s #\n",_gsl_signals[i].nickname,_gsl_signals[i].value);
+			int j;
+			g_fprintf(_filehandle,"b");
+			for (j=0;j<_gsl_signals[i].size;j++) {
+				g_fprintf(_filehandle,"%c",_gsl_signals[i].value[j]);
+			}
+			g_fprintf(_filehandle," %c\n",_gsl_signals[i].nickname);
 		}
 	}
 	return(0);
