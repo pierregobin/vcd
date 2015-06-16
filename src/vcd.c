@@ -129,6 +129,7 @@ int vcd_dump_vars(void)
 		} else {
 			int j;
 			g_fprintf(_filehandle,"b");
+			/* for (j=_gsl_signals[i].size-1;j>=0;j--) { */
 			for (j=0;j<_gsl_signals[i].size;j++) {
 				g_fprintf(_filehandle,"%c",_gsl_signals[i].value[j]);
 			}
@@ -162,6 +163,23 @@ int vcd_dump(char *name, char *value)
 	}
 	return(0);
 }
+
+int vcd_dump_from_int(char *name, int value)
+{
+	int i, size, j;
+	char tmp[128];
+	for (i=0; i<_signal_number;i++) {
+		if (strcmp(name,_gsl_signals[i].name) == 0) break;
+	}
+	size = _gsl_signals[i].size;
+	for(j=size-1;j>=0;j--) {
+		tmp[j] = ((value >> (size -j+1)) & 1) ? '1' : '0';
+	}
+	vcd_dump(name,tmp);
+	
+	
+}
+
 int vcd_time(long unsigned int time)
 {
 	if (time < _vcd_time) return 1;

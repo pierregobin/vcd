@@ -1,4 +1,4 @@
-noinst_PROGRAMS = openclose date comment var dumpvar
+noinst_PROGRAMS = openclose date comment var dumpvar dumpvarint
 openclose_SOURCES = openclose.c
 openclose_CFLAGS = -I../src $(CFLAGS) $(GLIB_CFLAGS)
 openclose_LDADD = $(top_builddir)/src/libvcd.a  $(GLIB_LIBS)
@@ -19,5 +19,9 @@ dumpvar_SOURCES = dumpvar.c
 dumpvar_CFLAGS = -I../src $(CFLAGS) $(GLIB_CFLAGS)
 dumpvar_LDADD = $(top_builddir)/src/libvcd.a $(GLIB_LIBS)
 
-TESTS = openclose date comment var dumpvar
+dumpvarint_SOURCES = dumpvarint.c
+dumpvarint_CFLAGS = -I../src $(CFLAGS) $(GLIB_CFLAGS)
+dumpvarint_LDADD = $(top_builddir)/src/libvcd.a $(GLIB_LIBS)
+
+TESTS = openclose date comment var dumpvar dumpvarint
 
