@@ -6,5 +6,6 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0])
 AC_SUBST([GLIB_LIBS])
 AC_SUBST([GLIB_CFLAGS])
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
+AC_CONFIG_FILES([vcd.pc])
 AC_OUTPUT
 
