@@ -3,7 +3,7 @@
 #include <stdio.h>
 int success=0;
 int failure=0;
-long int time = 0;
+long int _time = 0;
 void increment(void)
 {
 	int i;
