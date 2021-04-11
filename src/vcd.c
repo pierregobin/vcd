@@ -178,18 +178,22 @@ int vcd_dump(char *name, char *value)
 
 int vcd_dump_from_int(char *name, int value)
 {
-	int i, size, j;
-	char tmp[128];
+	int i, size;
+	char bin[128];
+	char *binoff = bin;
+	char hex[8];
 	for (i=0; i<_signal_number;i++) {
 		if (strcmp(name,_gsl_signals[i].name) == 0) break;
 	}
 	size = _gsl_signals[i].size;
-	for(j=size-1;j>=0;j--) {
-		tmp[j] = ((value >> (size -j+1)) & 1) ? '1' : '0';
-	}
-	vcd_dump(name,tmp);
-	
-	
+
+	sprintf(hex,"%04x", value);
+	vcd_hex2bin(hex, bin);
+
+	binoff+=strlen(bin)-size; //moving the pointer to the place in the string we need move to the beginning 
+	strcpy(bin, binoff);
+
+	vcd_dump(name,bin);
 }
 
 int vcd_time(long unsigned int time)
@@ -200,4 +204,71 @@ int vcd_time(long unsigned int time)
 	return 0;
 }
 
-
+int vcd_hex2bin(char *hex, char *bin)
+{
+	bin[0]=0;
+	while(*hex)
+    {
+        switch(*hex)
+        {
+            case '0':
+                strcat(bin, "0000");
+                break;
+            case '1':
+                strcat(bin, "0001");
+                break;
+            case '2':
+                strcat(bin, "0010");
+                break;
+            case '3':
+                strcat(bin, "0011");
+                break;
+            case '4':
+                strcat(bin, "0100");
+                break;
+            case '5':
+                strcat(bin, "0101");
+                break;
+            case '6':
+                strcat(bin, "0110");
+                break;
+            case '7':
+                strcat(bin, "0111");
+                break;
+            case '8':
+                strcat(bin, "1000");
+                break;
+            case '9':
+                strcat(bin, "1001");
+                break;
+            case 'a':
+            case 'A':
+                strcat(bin, "1010");
+                break;
+            case 'b':
+            case 'B':
+                strcat(bin, "1011");
+                break;
+            case 'c':
+            case 'C':
+                strcat(bin, "1100");
+                break;
+            case 'd':
+            case 'D':
+                strcat(bin, "1101");
+                break;
+            case 'e':
+            case 'E':
+                strcat(bin, "1110");
+                break;
+            case 'f':
+            case 'F':
+                strcat(bin, "1111");
+                break;
+            default:
+                printf("Invalid hexadecimal input.");
+        }
+		hex++;
+    }
+	return 0;
+}

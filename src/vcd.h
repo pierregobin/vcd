@@ -16,6 +16,6 @@ int vcd_close();
 int vcd_dump(char *name, char *value);
 int vcd_dump_from_int(char *name, int value);
 int vcd_time(long unsigned int time);
-
+int vcd_hex2bin(char *hex, char *bin);
 #endif /* VCD_H_ */
 

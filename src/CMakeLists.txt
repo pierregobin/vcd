@@ -14,12 +14,20 @@ set(CMAKE_CXX_FLAGS "-O3")
 SET(CMAKE_CXX_STANDARD 11)
 set(CMAKE_EXE_LINKER_FLAGS "-Xlinker -Map=output.map" )
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
+set(CMAKE_INSTALL_LIBDIR /usr/local/lib)
+set(CMAKE_INSTALL_INCLUDEDIR /usr/local/include)
+
+
 
 project(vcd)
 
-include_directories(/usr/include/glib-2.0/)
-
-
 add_library(${CMAKE_PROJECT_NAME} SHARED
 	./src/vcd.c
+)
+
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES PUBLIC_HEADER ./src/vcd.h)
+
+install(TARGETS ${CMAKE_PROJECT_NAME}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
