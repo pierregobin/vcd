@@ -15,19 +15,18 @@
     along with vcd.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glib.h>
-#include <glib/gstdio.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <vcd.h>
+#include "vcd.h"
 #include <errno.h>
 #include <string.h>
+#include <time.h>
 #define MAX_SIGNAL 20
 static long unsigned int _vcd_time;
 static char * _filename;
 static FILE  * _filehandle;
-static gboolean _print_vcd_time;
+static char _print_vcd_time;
 
 typedef struct s_signals {
 	char *name; /* name of the signal */
@@ -41,6 +40,17 @@ static s_signal  _gsl_signals[MAX_SIGNAL];
 static int _signal_number;
 static int nickname;
 
+char* get_time_string()
+{
+    struct tm *tm;
+    time_t t;
+    char *str_time = (char *) malloc(100*sizeof(char));
+    t = time(NULL);
+    tm = localtime(&t);
+    strftime(str_time, sizeof(str_time), "%H:%M:%S", tm);
+    return str_time;
+}
+
 int vcd_init(void)
 {
 	_signal_number = 0;
@@ -52,7 +62,7 @@ int vcd_init(void)
 int vcd_open(char *filename)
 {
 	_filename = filename;
-	if ((_filehandle=g_fopen(_filename,"w+")) == NULL) {
+	if ((_filehandle=fopen(_filename,"w+")) == NULL) {
 		printf("%s %i - NULL\n",__FUNCTION__,__LINE__);
 		return EMFILE;
 		
@@ -61,42 +71,44 @@ int vcd_open(char *filename)
 }
 int vcd_date(void)
 {
-	GTimeVal current_time;
-	gchar * c_time_string;
+	char * c_time_string;
 	if (_filehandle == NULL) {
 		printf("_filehandle is NULL\n");
 		exit(0);
 	}
-	g_fprintf(_filehandle,"$date\n");
-	g_get_current_time(&current_time);
-	c_time_string = g_time_val_to_iso8601(&current_time);
-	g_fprintf(_filehandle,"\t%s\n",c_time_string);
-	g_fprintf(_filehandle,"$end\n");
+	fprintf(_filehandle,"$date\n");
+	c_time_string = get_time_string();
+	fprintf(_filehandle,"\t%s\n",c_time_string);
+	fprintf(_filehandle,"$end\n");
 	return(0);
 }
 int vcd_version(char *version)
 {
-	g_fprintf(_filehandle,"$version\n");
-	g_fprintf(_filehandle,"\t%s\n",version);
-	g_fprintf(_filehandle,"$end\n");
+	fprintf(_filehandle,"$version\n");
+	fprintf(_filehandle,"\t%s\n",version);
+	fprintf(_filehandle,"$end\n");
 }
 int vcd_comment(char *comment)
 {
-	g_fprintf(_filehandle,"$comment\n");
-	g_fprintf(_filehandle,"\t%s\n",comment);
-	g_fprintf(_filehandle,"$end\n");
+	fprintf(_filehandle,"$comment\n");
+	fprintf(_filehandle,"\t%s\n",comment);
+	fprintf(_filehandle,"$end\n");
 }
 int vcd_timescale(char *timescale)
 {
-	g_fprintf(_filehandle,"$timescale %s $end\n",timescale);
+	fprintf(_filehandle,"$timescale %s $end\n",timescale);
 }
 int vcd_scope(char *module)
 {
-	g_fprintf(_filehandle,"$scope module %s $end\n",module);
+	fprintf(_filehandle,"$scope module %s $end\n",module);
+}
+int vcd_enddef(void)
+{
+	fprintf(_filehandle,"$enddefinitions $end\n");
 }
 int vcd_upscope(void)
 {
-	g_fprintf(_filehandle,"$upscope $end\n");
+	fprintf(_filehandle,"$upscope $end\n");
 }
 int vcd_wire(char *name, int size)
 {
@@ -107,7 +119,7 @@ int vcd_wire(char *name, int size)
 	_gsl_signals[_signal_number].nickname = nickname;
 	for (i=0;i<size;i++) _gsl_signals[_signal_number].value[i] = 'x';
 	_gsl_signals[_signal_number].value[i]=0;
-	g_fprintf(_filehandle,"$var wire %d %c %s $end\n",size,nickname,name);
+	fprintf(_filehandle,"$var wire %d %c %s $end\n",size,nickname,name);
 	_signal_number++;
 	nickname ++;
 	return(0);
@@ -122,21 +134,21 @@ int vcd_close(void)
 int vcd_dump_vars(void)
 {
 	int i;
-	g_fprintf(_filehandle,"$dumpvars\n");
+	fprintf(_filehandle,"$dumpvars\n");
 	for (i=0; i<_signal_number;i++) {
 		if (_gsl_signals[i].size == 1) {
-			g_fprintf(_filehandle,"%c%c\n",(int) _gsl_signals[i].value[0], _gsl_signals[i].nickname);
+			fprintf(_filehandle,"%c%c\n",(int) _gsl_signals[i].value[0], _gsl_signals[i].nickname);
 		} else {
 			int j;
-			g_fprintf(_filehandle,"b");
+			fprintf(_filehandle,"b");
 			/* for (j=_gsl_signals[i].size-1;j>=0;j--) { */
 			for (j=0;j<_gsl_signals[i].size;j++) {
-				g_fprintf(_filehandle,"%c",_gsl_signals[i].value[j]);
+				fprintf(_filehandle,"%c",_gsl_signals[i].value[j]);
 			}
-			g_fprintf(_filehandle," %c\n",_gsl_signals[i].nickname);
+			fprintf(_filehandle," %c\n",_gsl_signals[i].nickname);
 		}
 	}
-	g_fprintf(_filehandle,"$end\n");
+	fprintf(_filehandle,"$end\n");
 }
 int vcd_dump(char *name, char *value)
 {
@@ -146,19 +158,19 @@ int vcd_dump(char *name, char *value)
 	}
 	if (strncmp(value,_gsl_signals[i].value,_gsl_signals[i].size) != 0) {
 		if (_print_vcd_time) {
-			g_fprintf(_filehandle,"#%ld\n",_vcd_time);
-			_print_vcd_time = FALSE;
+			fprintf(_filehandle,"#%ld\n",_vcd_time);
+			_print_vcd_time = 0;
 		}
 		strncpy(_gsl_signals[i].value,value,_gsl_signals[i].size);
 		if (_gsl_signals[i].size == 1) {
-			g_fprintf(_filehandle,"%c%c\n",(int) _gsl_signals[i].value[0], _gsl_signals[i].nickname);
+			fprintf(_filehandle,"%c%c\n",(int) _gsl_signals[i].value[0], _gsl_signals[i].nickname);
 		} else {
 			int j;
-			g_fprintf(_filehandle,"b");
+			fprintf(_filehandle,"b");
 			for (j=0;j<_gsl_signals[i].size;j++) {
-				g_fprintf(_filehandle,"%c",_gsl_signals[i].value[j]);
+				fprintf(_filehandle,"%c",_gsl_signals[i].value[j]);
 			}
-			g_fprintf(_filehandle," %c\n",_gsl_signals[i].nickname);
+			fprintf(_filehandle," %c\n",_gsl_signals[i].nickname);
 		}
 	}
 	return(0);
@@ -184,7 +196,7 @@ int vcd_time(long unsigned int time)
 {
 	if (time < _vcd_time) return 1;
 	_vcd_time = time;
-	_print_vcd_time = TRUE;
+	_print_vcd_time = 1;
 	return 0;
 }
 

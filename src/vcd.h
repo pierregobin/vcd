@@ -1,4 +1,3 @@
-#include <glib.h>
 #ifndef VCD_H_
 #define VCD_H_
 
@@ -10,6 +9,7 @@ int vcd_version(char *version);
 int vcd_comment(char *comment);
 int vcd_timescale(char *timescale);
 int vcd_scope(char *module);
+int vcd_enddef(void);
 int vcd_upscope(void);
 int vcd_wire(char *name,int size);
 int vcd_close();
