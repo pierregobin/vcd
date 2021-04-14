@@ -13,6 +13,7 @@ int vcd_enddef(void);
 int vcd_upscope(void);
 int vcd_wire(char *name,int size);
 int vcd_close();
+int vcd_dump_vars(void);
 int vcd_dump(char *name, char *value);
 int vcd_dump_from_int(char *name, int value);
 int vcd_time(long unsigned int time);
