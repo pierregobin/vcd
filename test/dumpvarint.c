@@ -1,4 +1,4 @@
-#include <vcd.h>
+#include "vcd.h"
 #include <stdlib.h>
 #include <stdio.h>
 int success=0;
@@ -30,7 +30,7 @@ int main(int argc, char *argv)
 {
 	int h;
 	vcd_init();
-	if (vcd_open("dumpvarint.out") == 0) {
+	if (vcd_open("dumpvarint.vcd") == 0) {
 		success++;
 		printf("open succeeded\n");
 	} else {
@@ -48,6 +48,7 @@ int main(int argc, char *argv)
 	vcd_wire("empty",1);
 	vcd_wire("underrun",1);
 	vcd_upscope();
+	vcd_enddef();
 	vcd_dump_vars();
 	vcd_time(10UL);
 	vcd_dump_from_int("rx",1);

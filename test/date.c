@@ -1,4 +1,4 @@
-#include <vcd.h>
+#include "vcd.h"
 #include <stdlib.h>
 #include <stdio.h>
 int success=0;
@@ -7,7 +7,7 @@ int main(int argc, char *argv)
 {
 	int h;
 	vcd_init();
-	if (vcd_open("date.out") == 0) {
+	if (vcd_open("date.vcd") == 0) {
 		success++;
 		printf("open succeeded\n");
 	} else {
