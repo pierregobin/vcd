@@ -1,7 +1,13 @@
 # Value Change Dump
 This is a small library for genrating VCD files that is under GNU General Public License.
 
-Working with the library is simple.
+### Building and Installing
+```bash
+cmake .
+make
+sudo make install
+```
+### Working with the library
 ```c
 vcd_init();
 if (vcd_open("var.vcd")) {
